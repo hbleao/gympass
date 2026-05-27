@@ -1,6 +1,7 @@
 allowBuilds:
   '@biomejs/biome': true
   '@prisma/engines': true
+  bcrypt: true
   better-sqlite3: true
   esbuild: true
   lefthook: true
