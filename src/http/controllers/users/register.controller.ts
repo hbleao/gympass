@@ -1,5 +1,6 @@
-import { prisma } from "@/db/prisma";
-import bcrypt from "bcrypt";
+import { UserAlreadyExistsError } from "@/errors/user-already-exists-error";
+import { PrismaUserRepository } from "@/repositories/prisma-user-repository";
+import { RegisterUserCase } from "@/use-cases/register";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
 
@@ -15,25 +16,22 @@ export async function registerController(
 
 	const { name, email, password } = registerBodySchema.parse(request.body);
 
-	const userExists = await prisma.user.findUnique({
-		where: {
-			email,
-		},
-	});
+	try {
+		const prismaUserRepository = new PrismaUserRepository();
+		const registerUserCase = new RegisterUserCase(prismaUserRepository);
 
-	if (userExists) {
-		return reply.status(409).send();
-	}
-
-	const passwordHash = await bcrypt.hash(password, 10);
-
-	await prisma.user.create({
-		data: {
+		await registerUserCase.execute({
 			name,
 			email,
-			password_hash: passwordHash,
-		},
-	});
+			password,
+		});
 
-	return reply.status(201).send("User registered successfully");
+		return reply.status(201).send("User registered successfully");
+	} catch (error) {
+		if (error instanceof UserAlreadyExistsError) {
+			return reply.status(409).send(error.message);
+		}
+
+		return reply.status(500).send("Internal server error"); // TODO: Log error
+	}
 }
