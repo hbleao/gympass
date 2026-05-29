@@ -1,12 +1,13 @@
 import type { User } from "@/interfaces/user";
 import type { UserRepository } from "@/interfaces/user-repository";
+import { randomUUID } from "node:crypto";
 
 export class InMemoryUserRepository implements UserRepository {
 	public users: User[] = [];
 
 	async create(data: { name: string; email: string; password_hash: string }) {
 		const user = {
-			id: crypto.randomUUID(),
+			id: randomUUID(),
 			name: data.name,
 			email: data.email,
 			password_hash: data.password_hash,
