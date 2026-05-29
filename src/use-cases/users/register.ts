@@ -18,9 +18,7 @@ export class RegisterUserCase {
 			request.email,
 		);
 
-		if (userWithEmailExists) {
-			throw new UserAlreadyExistsError();
-		}
+		if (userWithEmailExists) throw new UserAlreadyExistsError();
 
 		const passwordHash = await bcrypt.hash(request.password, 10);
 
